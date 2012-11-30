@@ -1,0 +1,16 @@
+1 -a 0 Advance to "Go"
+2 -j 1 Go to jail. Move directly to jail. Do not pass "Go". Do not collect £200
+3 -a 11 Advance to Pall Mall. If you pass "Go" collection £200
+4 -a 15 Take a trip to Marylebone Station and if you pass "Go" collect £200
+5 -a 24 Advance to Trafalgar Square. If you pass "Go" collect £200
+6 -a 39 Advance to Mayfair
+7 -s 3 Go back three spaces
+8 -r 2 Make general repairs on all of your houses. For each house pay £25. For each hotel pay £100
+9 -r 1 You are assessed for street repairs: £40 per house, £115 per hotel
+10 -b 150 Pay school fees of £150
+11 -b 20 "Drunk in charge" fine £20
+12 -b 15 Speeding fine £15
+13 -g 150 Your building loan matures. Receive £150
+14 -g 100 You have won a crossword competition. Collect £100
+15 -g 50 Bank pays you dividend of £50
+16 -f 0 Get out of jail free. This card may be kept until needed or sold
