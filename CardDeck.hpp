@@ -46,11 +46,11 @@ namespace Monopoly
 
   private:
     
-    unsigned int numberCards;
-    int *deck;
-    const char *fileName;
-    std::vector<Card> cardDefinitions;
-    Monopoly::Game *theGame;
+    unsigned int m_numberCards;
+    int *m_deck;
+    const char *m_fileName;
+    std::vector<Card> m_cardDefinitions;
+    Monopoly::Game *m_theGame;
     
     int getNumberCards(const char *fileName); //change
     void initDeck();
@@ -60,6 +60,8 @@ namespace Monopoly
     int takeCardFromPile();
     void putCardBack(int index);
     void doAction(Card card, int player);
+    int calculateRepairValue(Monopoly::Player *currentPlayer, Card card);
+    int calculateMoveNextToPosition(Monopoly::Player *currentPlayer, Card card);
   };
 }
 
