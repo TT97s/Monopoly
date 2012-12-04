@@ -2,60 +2,59 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+
 
 /* constructor initialises the players name with string supplied as argument and a players piece with character also supplied s argument */
-Monopoly::Player::Player(Game* game, string playerName)
+Monopoly::Player::Player(Game* game, std::string playerName)
 {
-  name=playerName;
-  piece=0;
-  position=0;
-  money=1500;
-  inJail=false;
-  roundsInJail=0;
-  jailCards[0]=0;
-  jailCards[1]=0;
-  groups= new Group[10];
-  numberGroups=0;
+  m_name=playerName;
+  m_piece=0;
+  m_position=0;
+  m_money=1500;
+  m_inJail=false;
+  m_roundsInJail=0;
+  m_jailCards[0]=0;
+  m_jailCards[1]=0;
+  m_numberGroups=0;
   
 }
 
 /* accessors */
-int Monopoly::Player::get_position()
+int Monopoly::Player::getPosition()
 {
-  return position;
+  return m_position;
 }
 
-int Monopoly::Player::get_money()
+int Monopoly::Player::getMoney()
 {
-  return money;
+  return m_money;
 }
 
-string Monopoly::Player::get_name()
+std::string Monopoly::Player::getName()
 {
-  return name;
+  return m_name;
 }
 
-bool Monopoly::Player::in_jail()
+bool Monopoly::Player::isInJail()
 {
-  return inJail;
+  return m_inJail;
 }
 
-int Monopoly::Player::get_rounds_in_jail()
+int Monopoly::Player::getRoundsInJail()
 {
-  return roundsInJail;
+  return m_roundsInJail;
 }
 
-char Monopoly::Player::get_piece()
+char Monopoly::Player::getPiece()
 {
-  return piece;
+  return m_piece;
 }
 
-int Monopoly::Player::get_number_of_jail_cards()
+int Monopoly::Player::getNumberOfJailCards()
 {
-  if(jailCards[0]!=0)
+  if(m_jailCards[0]!=0)
   {
-    if(jailCards[1]!=0)
+    if(m_jailCards[1]!=0)
     {
       return 2;
     }
@@ -65,12 +64,12 @@ int Monopoly::Player::get_number_of_jail_cards()
 }
 
 
-int Monopoly::Player::check_number_full_groups()
+int Monopoly::Player::checkNumberFullGroups()
 {
   int number=0;
-  for(int i=0; i<numberGroups; i++)
+  for(int i=0; i<m_numberGroups; i++)
   {
-    if(groups[i].is_group_full())
+    if(m_groups[i].isGroupFull())
     {
       number++;
     }
@@ -78,121 +77,63 @@ int Monopoly::Player::check_number_full_groups()
   return number;
 }
 
-Group *Monopoly::Player::return_all_full_groups()
+std::vector<Group> Monopoly::Player::getAllFullGroups()
 {
-  int size=check_number_full_groups();
-  int number=0;
-  Group *newGroup=new Group[size];
+  std::vector<Group> newGroup;
   
-  for(int i=0; i<numberGroups; i++)
+  for(int i=0; i<m_numberGroups; i++)
   {
-    if(groups[i].is_group_full())
+    if(m_groups[i].isGroupFull())
     {
-      newGroup[number]=groups[i];
-      number++;
+      newGroup.push_back(m_groups[i]);
     }
   }
   return newGroup;
 }
 
-bool Monopoly::Player::own_card(int card, int groupID)
+bool Monopoly::Player::ownProperty(int propertyIndex, int groupID)
 {
-  int i=0, num=0;
-  bool found=false;
-  Group group;
+  int i;
   
-  while(!found && i< numberGroups)
+  for( i=0; i < m_numberGroups; i++)
   {
-    if(groups[i].get_id()==groupID)
-    {
-      group=groups[i];
-      found=true;
-    }
-    i++;
+    if(m_groups[i].getID() == groupID) return m_groups[i].hasCard( propertyIndex );
   }
-  if(!found) return false;
-  else
-  {
-    num=group.get_number_properties();
-    
-    for(i=0; i<num; i++)
-    {
-      if(group.get_property(i)==card) return true;
-      else if(group.get_property(i)==0) return false;
-    }
-    return false;
-  }
+  return false;
 }
 
 
-int *Monopoly::Player::return_all_cards()
+std::vector<int> Monopoly::Player::getAllCards()
 {
-  int *properties;
-  int numProperties=0, maxNumberPropertiesInGroup;
-  
-  for(int i=0; i<numberGroups; i++)
+  std::vector<int> properties;
+  std::vector<int> temp;
+  int i;
+  for( i=0; i < m_numberGroups; i++)
   {
-    maxNumberPropertiesInGroup=groups[i].get_number_properties();
-    for(int j=0; j<maxNumberPropertiesInGroup; j++)
-    {
-      if(groups[i].get_property(j)!=0) numProperties++;
-      else j=maxNumberPropertiesInGroup;
-    }
+    temp = m_groups[i].getProperties();
+    properties.insert(properties.end(), temp.begin(), temp.end());
   }
-  
-  if(numProperties>0)
-  {
-    properties=new int[numProperties];
-    numProperties=0;
-    for(int i=0; i<numberGroups; i++)
-    {
-      maxNumberPropertiesInGroup=groups[i].get_number_properties();
-      for(int j=0; j<maxNumberPropertiesInGroup; i++)
-      {
-        int property=groups[i].get_property(j);
-        if(property!=0) 
-        {
-	  properties[numProperties]=property;
-	  numProperties++;
-        }
-      }
-    }
-    return properties;
-  }
-  else return 0;
-}
-
-int *Monopoly::Player::return_all_cards_in_group(int groupID)
-{
-  int *properties, numProperties=0, property=0;
-  int maxNumberPropertiesInGroup=groups[groupID].get_number_properties();
-  
-  for(int i=0; i<maxNumberPropertiesInGroup; i++)
-  {
-    if(groups[groupID].get_property(i)!=0) numProperties++;
-    else i=maxNumberPropertiesInGroup;
-  }
-  
-  properties=new int[numProperties];
-  numProperties=0;
-  
-  for(int i=0; i<maxNumberPropertiesInGroup; i++)
-  {
-    property=groups[groupID].get_property(i);
-    if(property!=0) 
-    {
-      properties[numProperties]=property;
-      numProperties++;
-    }
-    else i=maxNumberPropertiesInGroup;
-  }
-  
   return properties;
 }
 
-/*TODO*/
-bool Monopoly::Player::is_bankrupt()
+std::vector<int> Monopoly::Player::getAllCardsInGroup(int groupID)
 {
+  int i;
+  std::vector<int> temp;
+  for( i=0; i < m_numberGroups; i++)
+  {
+    if(m_groups[i].getID() == groupID) 
+    {
+      return m_groups[i].getProperties();
+    }
+  }
+  return temp;
+}
+
+/*TODO*/
+bool Monopoly::Player::isBankrupt()
+{
+  if( m_money <= 0 ) return true;
   return false;
 }
 
@@ -200,101 +141,101 @@ bool Monopoly::Player::is_bankrupt()
 /* takes dies product, it will change the current position of the player at returns that position */
 int Monopoly::Player::move(int dieProduct)
 {
-  int temp=position;
-  position+=dieProduct;
-  while(position>=40)
+  int temp=m_position;
+  m_position+=dieProduct;
+  while(m_position>=40)
   {
-    position-=40;
+    m_position-=40;
   }
-  if(position==30)
+  if(m_position==30)
   {
-    cout << "You go straight to jail. You will not cross GO and will not revieve £200"<<endl;
-    go_to_jail();
+    std::cout << "You go straight to jail. You will not cross GO and will not revieve £200"<<std::endl;
+    goToJail();
   }
-  else if(temp > position)
+  else if(temp > m_position)
   {
-    money+=200;
-    cout << "You crossed GO and revieve £200"<<endl;
+    m_money+=200;
+    std::cout << "You crossed GO and revieve £200"<<std::endl;
   }
   
   
-  return position;
+  return m_position;
 }
 
 /* takes index of new position and mupdates players pocition. returns new position, adds 200 if player went over GO, */
-int Monopoly::Player::advance_to(int newPosition)
+int Monopoly::Player::advanceTo(int newPosition)
 {
-  int temp=position;
-  position= newPosition;
+  int temp=m_position;
+  m_position= newPosition;
   
-  if(temp>position || position==0)
+  if(temp>m_position || m_position==0)
   {
-    money+=200;
-    cout << "You crosses GO and revieve £200"<<endl;
+    m_money+=200;
+    std::cout << "You crosses GO and revieve £200"<<std::endl;
   }
-  return position;
+  return m_position;
 }
 
 /* takes index of new position and mupdates players pocition. returns new position, */
-int Monopoly::Player::go_back_to(int newPosition)
+int Monopoly::Player::goBackTo(int newPosition)
 {
-  position= newPosition;
-  return position;
+  m_position= newPosition;
+  return m_position;
 }
 
 /* moves player to jail and sets the jail booleans to true and rpunds to 1 */
-int Monopoly::Player::go_to_jail()
+int Monopoly::Player::goToJail()
 {
-  position =10;
-  inJail=true;
-  roundsInJail=0;
-  return position;
+  m_position =10;
+  m_inJail=true;
+  m_roundsInJail=0;
+  return m_position;
 }
 
 
-void Monopoly::Player::increase_round_in_jail()
+void Monopoly::Player::increaseRoundInJail()
 {
-  roundsInJail++;
+  m_roundsInJail++;
 }
 
 /* sets jail parameters back to 0 */
-void Monopoly::Player::free_from_jail()
+void Monopoly::Player::freeFromJail()
 {
-  inJail=false;
-  roundsInJail=0;
+  m_inJail=false;
+  m_roundsInJail=0;
 }
 
 /* takes money of the player and returns it */
-int Monopoly::Player::pay_money(int amount)
+int Monopoly::Player::payMoney(int amount)
 {
-  money-=amount;
-  return money;
+  m_money-=amount;
+  return m_money;
 }
 
 /* gives player money and returns new amount of money. Both could be made to be one function */
-int Monopoly::Player::get_money(int amount)
+int Monopoly::Player::getMoney(int amount)
 {
-  money+=amount;
-  return money;
+  m_money+=amount;
+  return m_money;
 }
 
 
 /* removes the last jail card, if there is one. and puts it back in deck */
-int Monopoly::Player::use_jail_card(int index)
+int Monopoly::Player::useJailCard(int index)
 {
-  int jailCard= jailCards[1];
+  int jailCard= m_jailCards[1];
   if(jailCard!=0)
   {  
-    free_from_jail();
-    remove_jail_card();
+    freeFromJail();
+    removeJailCard();
   }
   else
   {
-    jailCard= jailCards[0];
+    jailCard= m_jailCards[0];
     if(jailCard!=0)
     {  
-      free_from_jail();
-      remove_jail_card();
+      freeFromJail();
+      removeJailCard();
     }
   }
   return jailCard;
@@ -302,68 +243,68 @@ int Monopoly::Player::use_jail_card(int index)
 }
 
 /* removes last jail card */
-int Monopoly::Player::remove_jail_card()
+int Monopoly::Player::removeJailCard()
 {
-  int jailCard= jailCards[1];
+  int jailCard= m_jailCards[1];
   if(jailCard!=0)
   {  
-    jailCards[1]=0;
+    m_jailCards[1]=0;
   }
   else
   {
-    jailCard= jailCards[0];
+    jailCard= m_jailCards[0];
     if(jailCard!=0)
     {  
-      jailCards[0]=0;
+      m_jailCards[0]=0;
     }
   }
   return jailCard;
 }
 
 /* stores card in the players card list */
-void Monopoly::Player::keep_card(int cardID)
+void Monopoly::Player::keepCard(int cardID)
 {
-  if(jailCards[0]==0)
+  if(m_jailCards[0]==0)
   {  
-    jailCards[0]=cardID;
+    m_jailCards[0]=cardID;
   }
-  else jailCards[1]=cardID; //sinde there are just 2 jail cards in the game, not both array position can hold a jail card
+  else m_jailCards[1]=cardID; //sinde there are just 2 jail cards in the game, not both array position can hold a jail card
 }
 
-char Monopoly::Player::set_piece(char playerPiece)
+char Monopoly::Player::setPiece(char playerPiece)
 {
-  piece=playerPiece;
-  return piece;
+  m_piece=playerPiece;
+  return m_piece;
 }
 
-int Monopoly::Player::remove_property(int property, int groupID)
+int Monopoly::Player::removeProperty(int property, int groupID)
 {
-  for(int i=0; i< numberGroups; i++)
+  for(int i=0; i< m_numberGroups; i++)
   {
-    if(groups[i].get_id()==groupID)
+    if(m_groups[i].getID()==groupID)
     {
-      return groups[i].delete_property(property);
+      return m_groups[i].deleteProperty(property);
     }
   }
   return 0;
 }
 
-int Monopoly::Player::add_property(int property, int groupID, int groupSize)
+int Monopoly::Player::addProperty(int property, int groupID, int groupSize)
 {
   int i;
-  for(i=0; i< numberGroups; i++)
+  for(i=0; i< m_numberGroups; i++)
   {
-    if(groups[i].get_id()==groupID)
+    if(m_groups[i].getID()==groupID)
     {
-      return groups[i].add_property_to_list(property);
+      return m_groups[i].addPropertyToList(property);
     }
   }
-  //group does not yet exsists;
-  //groups[i+1]=new Group(groupID, groupSize);
-  //!!!find better way!!!!!!!
-  groups[i+1].reinit_group(groupID, groupSize);
-  groups[i+1].add_property_to_list(property);
-  numberGroups++;
-  return 0;
+  /* group does not exists, so create a new one and add the property */
+  
+  Group newGroup(groupID, groupSize);			//create new roups
+  i = newGroup.addPropertyToList(property);			//add element to group
+  m_groups.push_back(newGroup);				//save group in group vector
+  m_numberGroups++;
+  return i;
 }
 
