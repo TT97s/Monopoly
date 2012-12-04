@@ -9,24 +9,25 @@ int roll_die();
 int main (int argc, char *argv[]) 
 {
   srand(time(NULL));		//set random seed
-  
   Monopoly::Game game;
-  Monopoly::CardDeck chance(&game, "Chance");
-  Monopoly::CardDeck communityChest(&game, "Community_Chest");
+ 
+  Monopoly::CardDeck chance(&game, "chance.deck");
+  Monopoly::CardDeck communityChest(&game, "community.deck");
+
   std::vector<Monopoly::Player> players;
+
   
   int numberPlayers =argc-1;
   int position;
   int die1=0, die2=0;
+
   
   players=init_players(&game, players, numberPlayers, argv);
-  
   std::cout<<std::endl;
   
   for(int i=0; i<numberPlayers; i++)
   {
-    std::cout<<players[i].get_name()<<" at position "<<players[i].get_position()<<" and money £"<< players[i].get_money()<<std::endl;
-  
+    std::cout<<game.getPlayer(i)->getName()<<" at position "<<game.getPlayer(i)->getPosition()<<" and money £"<< game.getPlayer(i)->getMoney()<<std::endl;
   }
   
   std::cout<<std::endl;
@@ -35,13 +36,13 @@ int main (int argc, char *argv[])
   {
     for(int i=0; i<numberPlayers; i++)
     {
-      std::cout<<players[i].get_name()<<" at position "<<players[i].get_position()<<" shake die...";
+      std::cout<<game.getPlayer(i)->getName()<<" at position "<<game.getPlayer(i)->getPosition()<<" shake die...";
       die1=roll_die();
       die2=roll_die();
       std::cout<<die1 <<" "<<die2<<std::endl;
-      players[i].move(die1+die2);
-      std::cout<<" new position "<<players[i].get_position()<<std::endl;
-      position=players[i].get_position();
+      game.getPlayer(i)->move(die1+die2);
+      std::cout<<" new position "<<game.getPlayer(i)->getPosition()<<std::endl;
+      position=game.getPlayer(i)->getPosition();
       
       if(position == 7 || position == 22 || position == 36)
       {
