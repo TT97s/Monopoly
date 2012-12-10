@@ -10,7 +10,7 @@ Monopoly::Player::Player(Game* game, std::string playerName)
   m_name=playerName;
   m_piece=0;
   m_position=0;
-  m_money=1500;
+  m_money=1500; 
   m_inJail=false;
   m_roundsInJail=0;
   m_jailCards[0]=0;
@@ -77,6 +77,18 @@ int Monopoly::Player::checkNumberFullGroups()
   return number;
 }
 
+std::vector<Group> Monopoly::Player::getAllGroups()
+{
+  int i;
+  std::vector<Group> new_groups;
+  
+  for( i=0; i < m_groups.size(); i++ )
+  {
+    if( m_groups[i].getNumberProperties() != 0 ) new_groups.push_back(m_groups[i]);
+  }
+  return new_groups;
+}
+
 std::vector<Group> Monopoly::Player::getAllFullGroups()
 {
   std::vector<Group> newGroup;
@@ -102,8 +114,7 @@ bool Monopoly::Player::ownProperty(int propertyIndex, int groupID)
   return false;
 }
 
-
-std::vector<int> Monopoly::Player::getAllCards()
+std::vector<int> Monopoly::Player::getAllProperties()
 {
   std::vector<int> properties;
   std::vector<int> temp;
@@ -116,7 +127,7 @@ std::vector<int> Monopoly::Player::getAllCards()
   return properties;
 }
 
-std::vector<int> Monopoly::Player::getAllCardsInGroup(int groupID)
+std::vector<int> Monopoly::Player::getAllPropertiesInGroup(int groupID)
 {
   int i;
   std::vector<int> temp;
@@ -130,7 +141,7 @@ std::vector<int> Monopoly::Player::getAllCardsInGroup(int groupID)
   return temp;
 }
 
-/*TODO*/
+
 bool Monopoly::Player::isBankrupt()
 {
   if( m_money <= 0 ) return true;
@@ -279,13 +290,16 @@ char Monopoly::Player::setPiece(char playerPiece)
 
 int Monopoly::Player::removeProperty(int property, int groupID)
 {
+  int index;
+  
   for(int i=0; i< m_numberGroups; i++)
   {
     if(m_groups[i].getID()==groupID)
     {
-      return m_groups[i].deleteProperty(property);
+      index = m_groups[i].deleteProperty(property);
     }
   }
+  
   return 0;
 }
 

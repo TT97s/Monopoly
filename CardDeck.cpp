@@ -1,6 +1,9 @@
 #include "CardDeck.hpp"
 #include "Player.hpp"
 #include "Property.hpp"
+#include <string.h>
+
+#include <ctime>
 
 Monopoly::CardDeck::CardDeck(Game* game, const char *file)
 {
@@ -13,32 +16,37 @@ Monopoly::CardDeck::CardDeck(Game* game, const char *file)
    
    initDeck();
    initCardVector(m_cardDefinitions, m_fileName);
- 
-}
+ }
 
 Monopoly::CardDeck::~CardDeck()
 {
    delete[] m_deck;
 }
 
-bool Monopoly::CardDeck::drawCard(int player)
+bool Monopoly::CardDeck::drawCard(int player, int roll)
 {
+  int type=0;
   bool prision=false;
   int cardIndex;
   Card card;				// holds card which has been drawn
   
+  if(strcmp(m_fileName,"chance.deck")==0) type =1;
+  else if(strcmp(m_fileName,"community.deck")==0) type =2;
 
   cardIndex = takeCardFromPile();  	// draws a card and takes it from the deck
+  m_theGame->notifyCardDrawn(type, cardIndex);
+  
+
   card=m_cardDefinitions[cardIndex-1];
   putCardBack(cardIndex);			//put a card back into the deck
- 
   if(card.actionParam==6)
   {
     m_numberCards--;
     prision=true;
   }
-  doAction(card, player);
- 
+ doAction(card, player, roll);
+  
+  
   return prision;
 }
 
@@ -181,92 +189,70 @@ void Monopoly::CardDeck::initCardVector(std::vector<Card> &deck, const char *fil
 }
 
 
-void Monopoly::CardDeck::doAction(Card card, int player)
+void Monopoly::CardDeck::doAction(Card card, int player, int roll)
 {
   int newPosition;
   int index;			// used for iterating through list of players or the char vector
 
-  
   Monopoly::Player *currentPlayer = m_theGame->getPlayer(player);
   Monopoly::Player *nonTurnPlayer;
   
-  std::cout<<"Actions for player "<<currentPlayer->getName()<<std::endl;
-  
+ 
   switch(card.actionParam)
   {
     case 1:
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;
-      std::cout<<"pay/recieve money of amount "<<card.value<<std::endl;
+      
       currentPlayer->getMoney(card.value);
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;
       break;
       
     case 2:
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;
-      std::cout<<"Collect from each player "<<card.value<<std::endl;
-      
       for( index=0; index < m_theGame->getNumberPlayers(); index++)
       {
 	nonTurnPlayer=m_theGame->getPlayer(index);
 	nonTurnPlayer->payMoney(card.value);
 	currentPlayer->getMoney(card.value);
       }
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;      
       break; 
       
     case 3:
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
-      std::cout<<"Advance to "<<card.value<<std::endl;
+      std::cout<<"Card value"<<card.value<<std::endl;
       currentPlayer->advanceTo(card.value);
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
+      std::cout<<"new position"<<currentPlayer->getPosition()<<std::endl;
+      if(card.value!=0)
+      m_theGame->getProperty(currentPlayer->getPosition())->action(player, roll);
       break;
       
     case 4:
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
-      std::cout<<"Go back to Old Kent Road position "<<card.value<<std::endl;
       currentPlayer->goBackTo(card.value);
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
+      m_theGame->getProperty(currentPlayer->getPosition())->action(player, roll);
       break;  
       
     case 5:
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
-      std::cout<<"Go to jail"<<std::endl;
       currentPlayer->goToJail();
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
       break;    
     case 6:
-      std::cout<<currentPlayer->getName()<<" has number of jail cards "<<currentPlayer->getNumberOfJailCards()<<std::endl;
-      std::cout<<"Get out of jail free card "<<card.value<<std::endl;
-      std::cout<<currentPlayer->getName()<<" has number of jail cards "<<currentPlayer->getNumberOfJailCards()<<std::endl;
       break;
     
     case 7:
-      std::cout<<"Go back "<<card.value<<std::endl;
-      //std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
       newPosition = currentPlayer->getPosition() - card.value;
       if(newPosition<0) newPosition = 40+ newPosition;
       
       currentPlayer->goBackTo(newPosition);
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
+      if(currentPlayer->getPosition()%10!=0)
+      m_theGame->getProperty(currentPlayer->getPosition())->action(player, roll);
       break; 
       
     case 8:
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;
-      std::cout<<"Street repairs"<<std::endl;
       currentPlayer->payMoney( calculateRepairValue(currentPlayer, card) );
-      std::cout<<currentPlayer->getName()<<" has £"<<currentPlayer->getMoney()<<std::endl;
       break; 
       
-     /* TODO add double pay*/ 
      case 9:
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
-      std::cout<<"Advance to nearest Station/utility and if it is owned pay double"<<std::endl;
       currentPlayer->advanceTo(calculateMoveNextToPosition(currentPlayer, card));
-      std::cout<<currentPlayer->getName()<<" is at positon "<<currentPlayer->getPosition()<<std::endl;
+      m_theGame->getProperty(currentPlayer->getPosition())->action(player, roll);	
+      m_theGame->getProperty(currentPlayer->getPosition())->action(player, roll);	
       break; 
       
     default:
-      std::cout<<"No such action"<<std::endl;
       break;
   }
 }
@@ -276,42 +262,38 @@ int Monopoly::CardDeck::calculateRepairValue(Monopoly::Player *currentPlayer, Ca
   int priceHouses = 0, priceHotels = 0;
   int numberHouses = 0, numberHotels = 0;
   int index, flag =0, temp=0;		// flag meanings: 0=no number found, 1=reading 1st number, 2 read first number whole, 3 started reading 2nd number
-  std::vector<char> cardText;		// used for street repairs
+  std::vector<char> cardText;	// used for street repairs
   std::vector<int> properties;		//find out #houses and #hotels;
-  
-  properties=currentPlayer->getAllCards();
+  properties=currentPlayer->getAllProperties();
   cardText=card.text;
-  
-  
   /* get house and hotel prices from card describtion */
+  
   for( index=0; index < cardText.size(); index++)
   {
     if( isdigit( cardText[index] ) )
     {
-      if(flag==0) flag=1;
-      if(flag==1) priceHouses = priceHouses*10 + atoi(&cardText[index]);
-      else        
+      if(flag==0) 
       {
-	priceHotels = priceHotels*10 + atoi(&cardText[index]); 
+	flag=1;
+	priceHouses = atoi(&cardText[index]);
+      }
+      else if(flag==2)      
+      {
+	priceHotels = atoi(&cardText[index]); 
 	flag=3;
       }
     }
     else if(flag==1) flag=2;
     else if(flag==3) index=cardText.size();
   }
-  
+ 
   /* counds number of houses and Hotels a player owns */
   for( index=0; index < properties.size(); index++)
   {
-    temp = m_theGame->getProperty(index)->getNumberHouses();
+    temp = m_theGame->getProperty(properties[index])->getNumberHouses();  // getProperty takes the index of the property we want to know the nukber of houses of. And a player property list saves the indexes of the properties we hold. therefore we need to retrieve the property index of each property he player holds and use that index on the getProperty method.
     if(temp==5) numberHotels++;
     else numberHouses += temp;
   }
-  
-  std::cout<<"You need to pay £"<<priceHouses<<" for each hous and £"<<priceHotels<<" for each Hotel"<<std::endl;
-  std::cout<<"You have "<<numberHouses<<" Houses and "<<numberHotels<<" Hotels."<<std::endl;
-  std::cout<<"You need to pay £"<< (priceHouses * numberHouses) + (priceHotels * numberHotels) <<std::endl;
-      
   return (priceHouses * numberHouses) + (priceHotels * numberHotels);
       
 }

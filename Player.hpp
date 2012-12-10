@@ -25,9 +25,11 @@ char getPiece();
 int getNumberOfJailCards();
 int checkNumberFullGroups();
 std::vector<Group> getAllFullGroups();
+std::vector<Group> getAllGroups();
 bool ownProperty(int propertyInde, int groupID);
-std::vector<int> getAllCardsInGroup(int groupID);
-std::vector<int> getAllCards(); //call std::vector<int> GetAllCards;
+/* CHange to getAllProperties*/
+std::vector<int> getAllPropertiesInGroup(int groupID);
+std::vector<int> getAllProperties(); //call std::vector<int> GetAllCards;
 bool isBankrupt();
 
 /*mutators*/

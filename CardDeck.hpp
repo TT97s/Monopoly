@@ -37,7 +37,7 @@ namespace Monopoly
     /**
     Draw a card for a player, returns true if a get out of jail card was drawn.
     */
-    bool drawCard(int player);
+    bool drawCard(int player, int roll);
 
     /**
     Replace a get out of Jail card.
@@ -52,14 +52,14 @@ namespace Monopoly
     std::vector<Card> m_cardDefinitions;
     Monopoly::Game *m_theGame;
     
-    int getNumberCards(const char *fileName); //change
+    int getNumberCards(const char *fileName); 
     void initDeck();
     void initCardVector(std::vector<Card> &deck, const char *fileName);
     void shuffle();
     void deleteCard(int position, int length, int *deck);
     int takeCardFromPile();
     void putCardBack(int index);
-    void doAction(Card card, int player);
+    void doAction(Card card, int player, int roll);
     int calculateRepairValue(Monopoly::Player *currentPlayer, Card card);
     int calculateMoveNextToPosition(Monopoly::Player *currentPlayer, Card card);
   };
