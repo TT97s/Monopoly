@@ -1,0 +1,56 @@
+CardDeck:
+	*drawCard now notifies that and whoch card has been drawn
+	*drawCard and doAction now require a int roll.
+   When drawing a card and moving, the action on the new square has not been executed. inserted this in Doaction		
+	*DoAction now calls actions of a square if moved. cause Segmentation faults when new square was not a propeety
+	*DoAction Segmentation faults solved by cheking for non property squares indices (not best solution)
+	*DoAction pay douple now when advance to nearest station/utility is drawn and property owned. 
+	*calculateRepairValue fixe segemntation fault when reading the repair values for houses and hotels from the card text.
+	*calculateRepairValue get the right values for hotels and houses now.
+
+Game
+   The doubleCounter was not set back to 0 after the end of a players turn, so player have been pretty randomly send to prision.
+	*updateTurn Set soubleCounter back to 0 if no doble has been rolled, i.e. its a new player turn.
+	*notifyProposeTrade added that a given and accepted trade is executed.  (in if(accepts){ here }
+C
+
+Main	
+	*acceptTrad implemented. Tradee noew gets to view and accept or decline a trade.
+	*added printing methods:
+		printGroupList
+		printPropertyListNonMortgaged
+		printPropertyListMortgaged
+		printStatusPlayer
+		printaActionChoises
+		printTrade
+		choseProperties (checks if chosen property fulfills conditions)
+	*printActionChoises give the player the possibility to choose following actoins until he/she rolls the die:
+		-roll the die
+		-see a player status (prints lidt of players to chose from)
+		-mortgage property (show lists of unmortgaged propertied)
+		-unmortgage property (shows list of mortgaged properties)
+		-trade with a player (calls a function to set up the trade)
+	       if has at least one full sets prints additional optoins to
+		-buy a house (shows list of all fulls groups and their properties)
+		-sell house (shows list of all fulls groups and their properties)    if player is in jail shows additional options to
+		-use a get out of jail card
+		-pay to get out of jail
+	*doAction after the player choose an action, this function is called to perform it (using a switch statement).
+	*openTrading loops till a partnr for trading is found or trading canceled. 
+		     Loops till all properties the player wants are chosen and money he/she wants to recieve.
+		     Loops till all poperties the player wants to give a chosen an the money he/she wants to pay
+		     When done, reviews the trade and give the option to confirm, cancel or start again.
+Payer	
+	*added accessor std::vector<Group> getAllGroups();
+	*isBankrupt now returns false if players money equals or is below 0.
+	*changed names of getAllCards ans getAllCardsInGroup to getAllProperties and getAllPropertiesInGroup.
+
+Property 
+	*added getIndex accessor
+	*added getName accessor
+	*added getGroup accessor
+	*added getGroupSize accessor
+	*added isMortgage accessor
+	*sellHouse and *buyHouse changed bool canSell = streets.size() == m_group; to bool canSell = streets.size() == m_groupSize;
+
+
